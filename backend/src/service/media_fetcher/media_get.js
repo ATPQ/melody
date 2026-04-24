@@ -166,7 +166,10 @@ async function downloadTheLatestMediaGet(version) {
         logger.error('download failed');
         return false;
     }
-    fs.chmodSync(getBinPath(true), '755');
+    // Windows 不需要设置权限
+    if (!isWin) {
+      fs.chmodSync(getBinPath(true), '755');
+    }
     logger.info('download finished');
     
     // Add debug logs for binary file and validate
@@ -183,7 +186,8 @@ async function downloadTheLatestMediaGet(version) {
         
         // Check file permissions (should be executable)
         const executableMode = 0o755;
-        if ((stats.mode & 0o777) !== executableMode) {
+        // Windows 跳过权限检查
+        if (!isWin && (stats.mode & 0o777) !== executableMode) {
             logger.error(`Invalid binary file permissions: ${stats.mode.toString(8)}. Expected: ${executableMode.toString(8)}`);
             return false;
         }
